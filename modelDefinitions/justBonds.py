@@ -11,12 +11,8 @@ import helperFuncs
 import numpy as np
 from os import listdir
 from random import shuffle
-#import cPickle
-
-#from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
-#from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.optimizers import Adadelta #,SGD, Adagrad, RMSprop
 from keras.layers.recurrent import  GRU
 from keras.layers.extra import TimeDistributedFlatten, TimeDistributedConvolution2D, TimeDistributedMaxPooling2D
@@ -113,8 +109,6 @@ model.add(Dense(outsize))
 #lr  = 0.000001
 optimizer   = Adadelta()
 model.compile(loss='mean_squared_error', optimizer=optimizer)
-
-#    model.set_weights(getWeights("../OCRfeatures/200_5_3/bestModel.pickle"))
 
 helperFuncs.saveModel(model,folder+"wholeModel")
 
