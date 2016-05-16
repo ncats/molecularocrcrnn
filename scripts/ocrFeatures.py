@@ -2,7 +2,10 @@
 """
 Created on Wed Dec  9 14:17:45 2015
 
-@author: test
+@author: frickjm
+
+
+Generates feature vectors from the output of fromSDFs.py
 """
 import cPickle
 import numpy as np
@@ -145,30 +148,35 @@ print featuresOut[featuresOut.keys()[1]]
 means 	= np.mean(featuresOut.values(),axis=0)
 stds 	= np.mean(featuresOut.values(),axis=0)
 
+#dump the means and stds of each feature
 with open("../data/cidsMeansStds.pickle",'wb') as f:
     cp  = cPickle.Pickler(f)
     cp.dump([means, stds])
 
+#dump the features as a dictionary {cid : feature_vec}
+with open("../data/cidsFeatureVectors.pickle",'wb') as f:
+    cp  = cPickle.Pickler(f)
+    cp.dump(featuresOut)
+
+
+#dump the feature scaled to be z-scores
 featuresScaled = {}
 for k,v in featuresOut.iteritems():
     v		   = np.subtract(v,means)
     featuresScaled[k] = np.divide(v,stds) 
 
-
 with open("../data/cidsFeaturesScaled.pickle",'wb') as f:
     cp = cPickle.Pickler(f)
     cp.dump(featuresScaled)
 
-with open("../data/cidsFeatureVectors.pickle",'wb') as f:
-    cp  = cPickle.Pickler(f)
-    cp.dump(featuresOut)
+
     
-    
+
+#this is a transform of the features calculated represented by the CDF of their norm (to bound error appropriately)    
 featuresCDF     = {}
 for k,v in featuresScaled.iteritems():
     v		   = norm.cdf(v)
     featuresCDF[k] = v
-
  
 with open("../data/cidsFeaturesCDF.pickle",'wb') as f:
     cp  = cPickle.Pickler(f)
@@ -182,16 +190,18 @@ with open("../data/justRings.pickle",'wb') as f:
     cp  = cPickle.Pickler(f)
     cp.dump(justRings)   
     
-    
+
+#this is a subset of atoms of interest - may differ if using fewer/more molecules
 basicAtoms   = {}    
 for k,v in featuresOut.iteritems():
     #basicAtoms[k]    = v[19:33]
     basicAtoms[k]   = [v[20],v[23],v[24],v[26],v[27],v[28],v[30]]
-    #print basicAtoms[k]
+
 with open("../data/basicAtoms.pickle",'wb') as f:
     cp  = cPickle.Pickler(f)
     cp.dump(basicAtoms)
-  
+
+#this is just the counts of bonds of each type  
 justBonds   = {}    
 for k,v in featuresOut.iteritems():
     #basicAtoms[k]    = v[19:33]
@@ -201,6 +211,6 @@ with open("../data/justBonds.pickle",'wb') as f:
     cp  = cPickle.Pickler(f)
     cp.dump(justBonds)
 
-  
+#this is the name of each feature in cidsFeatures
 with open("../data/cidsFeatureKeys.txt",'wb') as f:
     f.write(','.join(finalFeatures))

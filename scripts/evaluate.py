@@ -2,42 +2,29 @@
 """
 Created on Mon Jan 11 10:41:01 2016
 
-@author: test
-"""
+@author: frickjm
 
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Dec 11 13:58:44 2015
-
-@author: test
+Evaluates a model using the data in its tempTestNP folder
 """
 
 
 import helperFuncs 
-
-#import matplotlib.pyplot as plt
-#import skimage.io as io
 import scipy.misc as mi
-#from skimage.transform import resize 
 import numpy as np
 from tabulate import tabulate
-#from os import listdir
+import cPickle
+import sys
+import time
+from scipy.spatial import distance
+from sklearn.metrics import mean_squared_error
+from scipy.stats import norm
 from os.path import isdir
 from os import mkdir
 from os.path import isfile
-#from random import shuffle
-import cPickle
-import sys
-#import subprocess
-import time
-from scipy.spatial import distance
-#from scipy.stats import entropy
-from sklearn.metrics import mean_squared_error
-from scipy.stats import norm
-
 
 np.random.seed(0)
 
+"""below are functions for outputing predictions v. ground truth"""
 def printFormula(p,t,cid,atomlist,means):
     print '\t',cid
     headers     = ["FEATURE","ACTUAL","PREDICTED","FLOAT","MEAN"]
@@ -110,7 +97,7 @@ def printFormula2(p,atomlist):
 
 
 
-
+"""Function for comparing which vec in allVec is closest to the predicted vec"""
 def getRank(cid,vec,allVec):
 
     tosort  = []    
@@ -158,9 +145,6 @@ means,stds          = helperFuncs.getMeansStds(features)
 
 
 """load model"""
-#with open(folder+"bestModel.pickle",'rb') as f:
-#    model     = cPickle.load(f)
-
 model   = helperFuncs.loadModel(folder+"wholeModel")
 
 
@@ -174,11 +158,6 @@ print "Loading np test arrays"
 loadedUp    = False
 while not loadedUp:       
     try:
-#        with open(testNP+"Xtest.pickle",'rb') as f:
-#            testImages     = cPickle.load(f)
-#    
-#        with open(testNP+"ytest.pickle",'rb') as f:
-#            testTargets    = cPickle.load(f)
         testImages  = helperFuncs.loadData(testNP+"Xtest",'h5')
         testTargets = helperFuncs.loadData(testNP+"ytest",'h5')            
             
@@ -198,6 +177,7 @@ RMSE    = np.sqrt(mean_squared_error(testTargets, preds))
 print "RMSE of epoch: ", RMSE
 
 for i in range(0,len(preds)):
+    print("*"*80)
     #printFormula(preds[i],testTargets[i],testCIDs[i],labels,means)
     print testCIDs[i]
     print preds[i]
@@ -212,7 +192,7 @@ for i in range(0,len(preds)):
     #print "most similar: ", mostSim
     
     
-    stop=raw_input("")
+    stop=raw_input("*"*80)
 
 
 del testImages, testTargets    

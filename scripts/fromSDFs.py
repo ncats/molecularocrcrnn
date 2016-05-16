@@ -2,7 +2,7 @@
 """
 Created on Tue Dec  8 15:26:10 2015
 
-@author: test
+@author: frickjm
 """
 
 
@@ -13,6 +13,8 @@ import cPickle
 
 
 """
+Reads in from SD files in ../data/SDF/
+
 Generates the following features:
 
 - atomPairs: counts of bonded atoms in the molecule, e.g. 'C-N':1, 'C-C': 5...

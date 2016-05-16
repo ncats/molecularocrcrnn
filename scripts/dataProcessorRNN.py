@@ -2,7 +2,9 @@
 """
 Created on Wed Jan  6 13:35:52 2016
 
-@author: test
+@author: frickjm
+
+Converts the images from dataGenerator into NP arrays
 """
 from os import listdir
 from os.path import isdir
@@ -19,9 +21,11 @@ import h5py
 import scipy.misc as mi
 
 
-wSize           = 60
-stride          = wSize/3
+wSize           = 60      #window size
+stride          = wSize/3 #stride size (lower means more overlap and more computation)
 
+"""function for taking an image and returning sequential windows from that image
+   at an interval of stride"""
 def im2window(image,wSize,stride):
     #create a padded image
     canvas  = np.zeros((image.shape[0]+stride-1,image.shape[1]+stride-1))
@@ -41,13 +45,13 @@ def im2window(image,wSize,stride):
     return np.reshape(np.array(output),(len(output),1,wSize,wSize))
 
 
-"""Processes images and pickles numpy arrays of them for training/testing"""
-
+#Process the arguments given (see helperFuncs.py for details)
 size, indir, binarize, blur, padding, targetType = helperFuncs.dataProcessorArgs(sys.argv[1:])
-
 targets, labels     = helperFuncs.getTargets(targetType)
 outsize             = helperFuncs.getOutSize(targets)
 
+
+#wait until the folder exists
 while not isdir(indir+"tempTrain/"):
     time.sleep(10.)
     print "I'm sleeping", isdir(indir), indir, "                     \r",
@@ -56,23 +60,21 @@ if not isdir(indir+"tempTrainNP/"):
     mkdir(indir+"tempTrainNP/")
     mkdir(indir+"tempTestNP/")
     
-#print "reading Train/Test files"   
-#train   = [x for x in file(indir+"traindata.csv").read().split("\n") if x != '']    
-#test    = [x for x in file(indir+"testdata.csv").read().split("\n") if x != '']    
-
+#define folders
 trainFolder     = indir+"tempTrain/"
 trainNPfolder   = indir+"tempTrainNP/"
 testFolder      = indir+"tempTest/"
 testNPfolder    = indir+"tempTestNP/"
 
 
-
+#get the number of 'time' steps in the sequence
 fakeImage   = np.ones((size,size))
 test        = im2window(fakeImage,wSize,stride)
 timeSteps   = test.shape[0]
 
 while True:
 
+    #wait until there are images in the training folder
     if isfile(trainNPfolder+ "Xtrain.h5"):
         time.sleep(1)
         print "sleeping because Train folder full      \r",
@@ -84,7 +86,7 @@ while True:
         trainTargets    = np.zeros((numTrainEx,outsize),dtype=np.float)
         trainCIDs            = []
 
-        added   = 0
+        added   = 0 #keep track of how many images have been added
         count   = 0
         while added < numTrainEx:
             x   = ld[count]
@@ -115,15 +117,16 @@ while True:
                 ld = listdir(trainFolder)
 
 
+        #dump the data
         helperFuncs.saveData(trainImages,trainNPfolder+"Xtrain",'h5')
         helperFuncs.saveData(trainTargets,trainNPfolder+"ytrain",'h5')
-            
 
         with open(trainNPfolder+"trainCIDs.pickle",'wb') as f:
             cp  = cPickle.Pickler(f)
             cp.dump(trainCIDs)
             
 
+    #do the same thing for the test folder
     if isfile(testNPfolder+ "Xtest.h5"):
         time.sleep(1)
         print "sleeping because test folder full      \r",
@@ -171,7 +174,7 @@ while True:
             cp  = cPickle.Pickler(f)
             cp.dump(testCIDs)
         
-
+    #repeat process for the training folder, so as to be ready to dump as soon as Xtrain is consumed
     if isfile(trainNPfolder+ "Xtrain.h5") and isfile(testNPfolder+ "Xtest.h5"):
         ld  = listdir(trainFolder)
         shuffle(ld)
